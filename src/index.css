@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Lato:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 35 30% 96%;
+    --foreground: 25 25% 15%;
+
+    --card: 35 25% 93%;
+    --card-foreground: 25 25% 15%;
+
+    --popover: 35 30% 96%;
+    --popover-foreground: 25 25% 15%;
+
+    --primary: 152 25% 36%;
+    --primary-foreground: 35 30% 96%;
+
+    --secondary: 35 30% 88%;
+    --secondary-foreground: 25 25% 15%;
+
+    --muted: 35 20% 92%;
+    --muted-foreground: 25 10% 45%;
+
+    --accent: 38 55% 55%;
+    --accent-foreground: 25 25% 15%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 35 20% 85%;
+    --input: 35 20% 85%;
+    --ring: 152 25% 36%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 35 25% 93%;
+    --sidebar-foreground: 25 25% 15%;
+    --sidebar-primary: 152 25% 36%;
+    --sidebar-primary-foreground: 35 30% 96%;
+    --sidebar-accent: 35 30% 88%;
+    --sidebar-accent-foreground: 25 25% 15%;
+    --sidebar-border: 35 20% 85%;
+    --sidebar-ring: 152 25% 36%;
+
+    /* Custom spa tokens */
+    --spa-warm: 30 40% 50%;
+    --spa-sage: 152 25% 36%;
+    --spa-sage-light: 152 20% 90%;
+    --spa-sand: 35 30% 88%;
+    --spa-cream: 35 30% 96%;
+    --spa-brown: 25 30% 30%;
+    --spa-gold: 38 55% 55%;
+
+    font-family: 'Lato', sans-serif;
+  }
+
+  .dark {
+    --background: 25 20% 10%;
+    --foreground: 35 20% 90%;
+    --card: 25 20% 14%;
+    --card-foreground: 35 20% 90%;
+    --popover: 25 20% 10%;
+    --popover-foreground: 35 20% 90%;
+    --primary: 152 25% 45%;
+    --primary-foreground: 25 20% 10%;
+    --secondary: 25 15% 20%;
+    --secondary-foreground: 35 20% 90%;
+    --muted: 25 15% 20%;
+    --muted-foreground: 35 10% 60%;
+    --accent: 38 55% 55%;
+    --accent-foreground: 25 20% 10%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 25 15% 22%;
+    --input: 25 15% 22%;
+    --ring: 152 25% 45%;
+    --sidebar-background: 25 20% 12%;
+    --sidebar-foreground: 35 20% 90%;
+    --sidebar-primary: 152 25% 45%;
+    --sidebar-primary-foreground: 25 20% 10%;
+    --sidebar-accent: 25 15% 18%;
+    --sidebar-accent-foreground: 35 20% 90%;
+    --sidebar-border: 25 15% 22%;
+    --sidebar-ring: 152 25% 45%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .section-padding {
+    @apply px-4 py-16 md:px-8 md:py-24 lg:px-16;
+  }
+
+  .container-spa {
+    @apply mx-auto max-w-7xl px-4 md:px-8;
+  }
+}
+
+@layer utilities {
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent;
+    background-image: linear-gradient(135deg, hsl(38 55% 55%), hsl(30 40% 50%));
+  }
+
+  .bg-gradient-spa {
+    background: linear-gradient(135deg, hsl(35 30% 96%), hsl(152 20% 90%));
+  }
+
+  .bg-gradient-warm {
+    background: linear-gradient(180deg, hsl(35 30% 96%), hsl(35 30% 88%));
+  }
+
+  .shadow-spa {
+    box-shadow: 0 4px 20px -4px hsl(25 25% 15% / 0.08);
+  }
+
+  .shadow-spa-lg {
+    box-shadow: 0 10px 40px -8px hsl(25 25% 15% / 0.12);
+  }
+}
