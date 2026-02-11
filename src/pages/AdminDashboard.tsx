@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import {
   Calendar,
   MessageSquare,
-  DollarSign,
+  IndianRupee,
   Users,
   TrendingUp,
   Clock,
@@ -11,6 +11,23 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import api from "../lib/api";
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LineChart,
+  Line,
+  Area,
+  AreaChart,
+} from "recharts";
+import { ChartJS, Doughnut, Pie, PolarArea, Radar } from "@/components/ui/chartjs-charts";
 
 interface DashboardData {
   stats: {
@@ -73,9 +90,9 @@ const getStatusBadge = (status: string) => {
 };
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(value);
@@ -83,6 +100,31 @@ const formatCurrency = (value: number) => {
 
 const AdminDashboard = () => {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [analytics, setAnalytics] = useState<{
+    monthlyBookings: Array<{ name: string; bookings: number; revenue: number }>;
+    weeklyData: Array<{ name: string; visitors: number; bookings: number }>;
+    servicesDistribution: Array<{ name: string; value: number }>;
+    statusDistribution: Array<{ name: string; value: number }>;
+    peakHours: Array<{ name: string; value: number }>;
+    customerSatisfaction: {
+      currentMonth: {
+        service: number;
+        ambiance: number;
+        staff: number;
+        value: number;
+        cleanliness: number;
+        parking: number;
+      };
+      lastMonth: {
+        service: number;
+        ambiance: number;
+        staff: number;
+        value: number;
+        cleanliness: number;
+        parking: number;
+      };
+    };
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,11 +132,19 @@ const AdminDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const response = await api.getDashboardStats();
-        if (response.success && response.data) {
-          setData(response.data);
+        const [dashboardResponse, analyticsResponse] = await Promise.all([
+          api.getDashboardStats(),
+          api.getAnalytics(),
+        ]);
+        
+        if (dashboardResponse.success && dashboardResponse.data) {
+          setData(dashboardResponse.data);
         } else {
-          setError(response.message || "Failed to load dashboard data");
+          setError(dashboardResponse.message || "Failed to load dashboard data");
+        }
+
+        if (analyticsResponse.success && analyticsResponse.data) {
+          setAnalytics(analyticsResponse.data);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -154,7 +204,7 @@ const AdminDashboard = () => {
       label: "Revenue",
       value: formatCurrency(stats.estimatedRevenue),
       change: `+${stats.completedBookings} completed`,
-      icon: DollarSign,
+      icon: IndianRupee,
       color: "text-amber-500",
       bgColor: "bg-amber-100",
     },
@@ -167,6 +217,109 @@ const AdminDashboard = () => {
       bgColor: "bg-purple-100",
     },
   ];
+
+  // Chart data from analytics
+  const barChartData = analytics?.monthlyBookings || [
+    { name: "Jan", bookings: 0, revenue: 0 },
+    { name: "Feb", bookings: 0, revenue: 0 },
+    { name: "Mar", bookings: 0, revenue: 0 },
+    { name: "Apr", bookings: 0, revenue: 0 },
+    { name: "May", bookings: 0, revenue: 0 },
+    { name: "Jun", bookings: 0, revenue: 0 },
+  ];
+
+  const barChartConfig = {
+    bookings: { label: "Bookings", color: "#3b82f6" },
+    revenue: { label: "Revenue", color: "#10b981" },
+  };
+
+  const lineChartData = analytics?.weeklyData || [
+    { name: "Mon", visitors: 0, bookings: 0 },
+    { name: "Tue", visitors: 0, bookings: 0 },
+    { name: "Wed", visitors: 0, bookings: 0 },
+    { name: "Thu", visitors: 0, bookings: 0 },
+    { name: "Fri", visitors: 0, bookings: 0 },
+    { name: "Sat", visitors: 0, bookings: 0 },
+    { name: "Sun", visitors: 0, bookings: 0 },
+  ];
+
+  const lineChartConfig = {
+    visitors: { label: "Visitors", color: "#8b5cf6" },
+    bookings: { label: "Bookings", color: "#f59e0b" },
+  };
+
+  const servicesData = analytics?.servicesDistribution || [];
+  const doughnutData = {
+    labels: servicesData.map((s) => s.name),
+    datasets: [
+      {
+        data: servicesData.map((s) => s.value),
+        backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6", "#ec4899"],
+        borderWidth: 0,
+      },
+    ],
+  };
+
+  const statusData = analytics?.statusDistribution || [];
+  const pieData = {
+    labels: statusData.map((s) => s.name),
+    datasets: [
+      {
+        data: statusData.map((s) => s.value),
+        backgroundColor: ["#f59e0b", "#10b981", "#3b82f6", "#ef4444", "#8b5cf6"],
+        borderWidth: 0,
+      },
+    ],
+  };
+
+  const peakHoursData = analytics?.peakHours || [];
+  const polarAreaData = {
+    labels: peakHoursData.map((p) => p.name),
+    datasets: [
+      {
+        data: peakHoursData.map((p) => p.value),
+        backgroundColor: ["#3b82f6", "#10b981", "#f59e0b", "#8b5cf6"],
+      },
+    ],
+  };
+
+  const radarData = {
+    labels: ["Service", "Ambiance", "Staff", "Value", "Cleanliness", "Parking"],
+    datasets: [
+      {
+        label: "Current Month",
+        data: analytics?.customerSatisfaction?.currentMonth
+          ? [
+              analytics.customerSatisfaction.currentMonth.service,
+              analytics.customerSatisfaction.currentMonth.ambiance,
+              analytics.customerSatisfaction.currentMonth.staff,
+              analytics.customerSatisfaction.currentMonth.value,
+              analytics.customerSatisfaction.currentMonth.cleanliness,
+              analytics.customerSatisfaction.currentMonth.parking,
+            ]
+          : [0, 0, 0, 0, 0, 0],
+        backgroundColor: "rgba(59, 130, 246, 0.2)",
+        borderColor: "#3b82f6",
+        borderWidth: 2,
+      },
+      {
+        label: "Last Month",
+        data: analytics?.customerSatisfaction?.lastMonth
+          ? [
+              analytics.customerSatisfaction.lastMonth.service,
+              analytics.customerSatisfaction.lastMonth.ambiance,
+              analytics.customerSatisfaction.lastMonth.staff,
+              analytics.customerSatisfaction.lastMonth.value,
+              analytics.customerSatisfaction.lastMonth.cleanliness,
+              analytics.customerSatisfaction.lastMonth.parking,
+            ]
+          : [0, 0, 0, 0, 0, 0],
+        backgroundColor: "rgba(16, 185, 129, 0.2)",
+        borderColor: "#10b981",
+        borderWidth: 2,
+      },
+    ],
+  };
 
   return (
     <motion.div
@@ -325,6 +478,161 @@ const AdminDashboard = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Charts Section */}
+      <motion.div variants={itemVariants} className="space-y-8">
+        {/* Bar Chart */}
+        <div className="rounded-2xl bg-card p-6 shadow-lg">
+          <h2 className="font-serif text-xl font-semibold text-foreground mb-6">
+            Bookings & Revenue Overview
+          </h2>
+          <ChartContainer config={barChartConfig} className="h-[300px] w-full">
+            <BarChart data={barChartData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="name" className="text-xs" />
+              <YAxis className="text-xs" />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Bar dataKey="bookings" fill="var(--color-bookings)" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="revenue" fill="var(--color-revenue)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
+        </div>
+
+        {/* Line Chart */}
+        <div className="rounded-2xl bg-card p-6 shadow-lg">
+          <h2 className="font-serif text-xl font-semibold text-foreground mb-6">
+            Weekly Visitors & Bookings
+          </h2>
+          <ChartContainer config={lineChartConfig} className="h-[300px] w-full">
+            <AreaChart data={lineChartData}>
+              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+              <XAxis dataKey="name" className="text-xs" />
+              <YAxis className="text-xs" />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area
+                type="monotone"
+                dataKey="visitors"
+                stroke="var(--color-visitors)"
+                fill="var(--color-visitors)"
+                fillOpacity={0.3}
+              />
+              <Area
+                type="monotone"
+                dataKey="bookings"
+                stroke="var(--color-bookings)"
+                fill="var(--color-bookings)"
+                fillOpacity={0.3}
+              />
+            </AreaChart>
+          </ChartContainer>
+        </div>
+
+        {/* Doughnut & Pie Charts */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl bg-card p-6 shadow-lg">
+            <h2 className="font-serif text-xl font-semibold text-foreground mb-6">
+              Services Distribution
+            </h2>
+            <div className="h-[300px] flex items-center justify-center">
+              <Doughnut
+                data={doughnutData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+          <div className="rounded-2xl bg-card p-6 shadow-lg">
+            <h2 className="font-serif text-xl font-semibold text-foreground mb-6">
+              Booking Status
+            </h2>
+            <div className="h-[300px] flex items-center justify-center">
+              <Pie
+                data={pieData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Polar Area & Radar Charts */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl bg-card p-6 shadow-lg">
+            <h2 className="font-serif text-xl font-semibold text-foreground mb-6">
+              Peak Hours Distribution
+            </h2>
+            <div className="h-[300px] flex items-center justify-center">
+              <PolarArea
+                data={polarAreaData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                      },
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+          <div className="rounded-2xl bg-card p-6 shadow-lg">
+            <h2 className="font-serif text-xl font-semibold text-foreground mb-6">
+              Customer Satisfaction
+            </h2>
+            <div className="h-[300px] flex items-center justify-center">
+              <Radar
+                data={radarData}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: "bottom",
+                      labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                      },
+                    },
+                  },
+                  scales: {
+                    r: {
+                      beginAtZero: true,
+                      max: 100,
+                    },
+                  },
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </motion.div>
     </motion.div>
   );
 };

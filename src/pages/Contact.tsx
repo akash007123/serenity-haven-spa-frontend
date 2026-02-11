@@ -406,12 +406,12 @@ const Contact = () => {
               {/* Social Links */}
               <motion.div variants={itemVariants} className="flex gap-4">
                 {[
-                  { icon: Instagram, label: "Instagram" },
-                  { icon: Facebook, label: "Facebook" },
+                  { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/tripod_wellness/" },
+                  { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/profile.php?id=61588127153621" },
                 ].map((social) => (
                   <motion.a
                     key={social.label}
-                    href="#"
+                    href={social.href}
                     whileHover={{ scale: 1.05, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     aria-label={social.label}

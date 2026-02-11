@@ -116,10 +116,8 @@ const Footer = () => {
           {/* Social Links */}
           <div className="mt-6 flex gap-4">
             {[
-              { icon: Instagram, label: "Instagram", href: "https://instagram.com" },
-              { icon: Facebook, label: "Facebook", href: "https://facebook.com" },
-              { icon: Twitter, label: "Twitter", href: "https://twitter.com" },
-              { icon: Youtube, label: "YouTube", href: "https://youtube.com" },
+              { icon: Instagram, label: "Instagram", href: "https://www.instagram.com/tripod_wellness/" },
+              { icon: Facebook, label: "Facebook", href: "https://www.facebook.com/profile.php?id=61588127153621" },
             ].map((social) => (
               <a
                 key={social.label}

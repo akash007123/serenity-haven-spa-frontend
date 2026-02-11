@@ -108,16 +108,16 @@ const AdminBookings = () => {
 
   // Service pricing (in production, this would come from the backend)
   const servicePrices: Record<string, number> = {
-    "Swedish Massage": 89,
-    "Hot Stone Therapy": 149,
-    "Aromatherapy": 99,
-    "Thai Massage": 109,
-    "Deep Tissue": 119,
-    "Reflexology": 79,
-    "Sports Massage": 129,
-    "Couples Massage": 199,
-    "Facial Treatment": 99,
-    "Body Scrub": 89,
+    "Swedish Massage": 7900,
+    "Hot Stone Therapy": 11200,
+    "Aromatherapy": 10000,
+    "Thai Massage": 10400,
+    "Deep Tissue": 9550,
+    "Reflexology": 7100,
+    "Sports Massage": 10700,
+    "Couples Massage": 16500,
+    "Facial Treatment": 8200,
+    "Body Scrub": 7400,
   };
 
   const getPrice = (service: string) => {
@@ -366,7 +366,7 @@ const AdminBookings = () => {
         <div className="rounded-xl bg-card p-4 shadow border-l-4 border-gray-400">
           <p className="text-sm text-muted-foreground">Total Revenue</p>
           <p className="text-3xl font-bold">
-            ${stats.totalRevenue?.toLocaleString() || 0}
+            ₹{stats.totalRevenue?.toLocaleString() || 0}
           </p>
         </div>
       </motion.div>
@@ -503,7 +503,7 @@ const AdminBookings = () => {
                     </td>
                     <td className="px-6 py-4">
                       <span className="font-semibold text-foreground">
-                        ${getPrice(booking.service)}
+                        ₹{getPrice(booking.service)}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -694,7 +694,7 @@ const AdminBookings = () => {
               <div className="flex justify-between pt-4">
                 <div className="text-lg font-bold">Total</div>
                 <div className="text-lg font-bold text-primary">
-                  ${getPrice(selectedBooking.service)}
+                  ₹{getPrice(selectedBooking.service)}
                 </div>
               </div>
 

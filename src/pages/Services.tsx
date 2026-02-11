@@ -1,15 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import type { Variants } from "framer-motion";
-import { Clock, X, CheckCircle, ArrowRight, Sparkles, Star, Calendar, Filter, Heart, Shield, Award, ChevronDown } from "lucide-react";
+import { Clock, X, CheckCircle, ArrowRight, Sparkles, Star, Calendar, Heart, Award, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AnimatedSection from "@/components/AnimatedSection";
-import { services, categories, getServicesByCategory, type Service } from "@/data/services";
+import api from "@/lib/api";
 import serviceSwedish from "@/assets/service-swedish.jpg";
 import serviceAromatherapy from "@/assets/service-aromatherapy.jpg";
 import serviceHotStone from "@/assets/service-hot-stone.jpg";
 import serviceThai from "@/assets/service-thai.jpg";
 import spaProcess from "@/assets/spa-process.jpg";
+
+interface ServiceDuration {
+  minutes: number;
+  price: string;
+}
+
+interface Service {
+  _id: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  description: string;
+  durations: ServiceDuration[];
+  price: string;
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  image: string;
+  category: string;
+  featured: boolean;
+  popular: boolean;
+  benefits: string[];
+  benefitDetails: Array<{ label: string; icon?: string }>;
+  whatToExpect: string[];
+  contraindications?: string[];
+  preparationTips?: string[];
+  rating?: number;
+  reviewCount?: number;
+  color?: string;
+  gradient?: string;
+}
+
+interface ServiceCategory {
+  id: string;
+  name: string;
+  icon: string;
+}
 
 const serviceImages: Record<string, string> = {
   swedish: serviceSwedish,
@@ -56,6 +94,9 @@ const itemVariants: Variants = {
 };
 
 const Services = () => {
+  const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<{ minutes: number; price: string } | null>(null);
@@ -63,12 +104,86 @@ const Services = () => {
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 400], [1, 1.05]);
 
-  const filteredServices = getServicesByCategory(selectedCategory);
+  const fetchServices = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [servicesRes, categoriesRes] = await Promise.all([
+        api.getServices({ active: true }),
+        api.getServiceCategories(),
+      ]);
+      
+      if (servicesRes.success && servicesRes.data) {
+        console.log("Public services fetched:", servicesRes.data.map(s => ({ id: s._id, name: s.name, category: s.category, isActive: s.isActive })));
+        setServices(servicesRes.data);
+      }
+      if (categoriesRes.success && categoriesRes.data) {
+        console.log("Categories fetched:", categoriesRes.data);
+        setCategories([
+          { id: "all", name: "All Services", icon: "sparkles" },
+          ...categoriesRes.data.map((c: any) => ({
+            id: (c.name || c.id || "").toString(),
+            name: c.name || c.id,
+            icon: c.icon || "sparkles",
+          })),
+        ]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch services:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchServices();
+  }, [fetchServices]);
+
+  const filteredServices = selectedCategory === "all" 
+    ? services 
+    : services.filter((s) => {
+        const serviceCategory = (s.category || "").trim().toLowerCase();
+        const selectedCat = selectedCategory.trim().toLowerCase();
+        const matches = serviceCategory === selectedCat;
+        if (!matches) {
+          console.log(`Service "${s.name}" filtered out: serviceCategory="${serviceCategory}" !== selectedCat="${selectedCat}"`);
+        }
+        return matches;
+      });
+
+  console.log("Current state:", {
+    servicesCount: services.length,
+    filteredServicesCount: filteredServices.length,
+    selectedCategory,
+    categoriesCount: categories.length
+  });
 
   const handleServiceClick = (service: Service) => {
     setSelectedService(service);
     setSelectedDuration(service.durations[0] || null);
   };
+
+  // Use API data or fallback to static hero services
+  const heroServices = categories.length > 1 
+    ? categories.filter((c) => c.id !== "all").slice(0, 5).map((c) => ({
+        name: c.name,
+        icon: "✨",
+        color: "text-primary"
+      }))
+    : [
+        { name: "Swedish", icon: "🕊️", color: "text-green-600" },
+        { name: "Deep Tissue", icon: "💪", color: "text-amber-700" },
+        { name: "Aromatherapy", icon: "🌸", color: "text-pink-600" },
+        { name: "Hot Stone", icon: "🪨", color: "text-orange-700" },
+        { name: "Thai", icon: "🧘", color: "text-yellow-700" },
+      ];
+
+  // Debug category mapping
+  console.log("Category mapping debug:", {
+    selectedCategory,
+    servicesCategories: [...new Set(services.map(s => s.category))],
+    categoriesIds: categories.map(c => c.id),
+    categoriesNames: categories.map(c => c.name)
+  });
 
   return (
     <>
@@ -241,6 +356,7 @@ const Services = () => {
         </div>
 
         {/* Scroll Indicator */}
+       
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -289,119 +405,67 @@ const Services = () => {
             </div>
           </AnimatedSection>
 
+          {/* Loading State */}
+          {loading && (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          )}
+
           {/* Services Grid */}
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            key={selectedCategory}
-            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-          >
-            {filteredServices.map((s) => (
-              <motion.div
-                key={s.id}
-                variants={itemVariants}
-                onClick={() => handleServiceClick(s)}
-                className="group relative cursor-pointer overflow-hidden rounded-2xl bg-card/80 shadow-lg backdrop-blur-sm transition-all hover:shadow-2xl"
-                whileHover={{ y: -8 }}
-              >
-                {/* Featured/Popular Badge */}
-                <div className="absolute top-4 left-4 z-10 flex gap-2">
-                  {s.featured && (
-                    <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                      Featured
-                    </span>
-                  )}
-                  {s.popular && (
-                    <span className="rounded-full bg-accent px-3 py-1 text-xs font-medium text-accent-foreground">
-                      Popular
-                    </span>
-                  )}
-                </div>
-
-                {/* Image */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <motion.img
-                    whileHover={{ scale: 1.1 }}
-                    transition={{ duration: 0.6, ease: "easeOut" }}
-                    src={serviceImages[s.image] || serviceSwedish}
-                    alt={s.name}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-                  {/* Rating */}
-                  <div className="absolute top-4 right-4 flex items-center gap-1 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold shadow backdrop-blur-sm">
-                    <Star size={14} className="fill-amber-400 text-amber-400" />
-                    {s.rating}
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="relative p-6">
-                  {/* Category */}
-                  <p className="mb-2 text-xs font-medium uppercase tracking-wider text-primary">
-                    {s.category}
-                  </p>
-
-                  {/* Title */}
-                  <h3 className="mb-2 font-serif text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
-                    {s.name}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="mb-4 text-sm leading-relaxed text-muted-foreground line-clamp-2">
-                    {s.shortDescription || s.description}
-                  </p>
-
-                  {/* Benefits */}
-                  <div className="mb-4 flex flex-wrap gap-1.5">
-                    {s.benefits.slice(0, 3).map((b) => (
-                      <span
-                        key={b}
-                        className="rounded-full bg-secondary/50 px-2.5 py-0.5 text-xs text-secondary-foreground"
-                      >
-                        {b}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Duration & Price */}
-                  <div className="flex items-center justify-between border-t border-border pt-4">
-                    <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Clock size={16} />
-                      <span>{s.duration}</span>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg font-bold text-primary">{s.price}</p>
-                      {s.durations.length > 1 && (
-                        <p className="text-xs text-muted-foreground">Multiple durations</p>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Hover Arrow */}
-                  <motion.div
-                    className="absolute bottom-6 right-6 opacity-0 transition-opacity"
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div className="rounded-full bg-primary p-2 text-primary-foreground">
-                      <ArrowRight size={16} />
-                    </div>
-                  </motion.div>
-                </div>
-
-                {/* Bottom accent */}
+          {!loading && filteredServices.length === 0 && (
+            <div className="rounded-2xl bg-card p-8 text-center shadow-lg">
+              <p className="mt-2 text-muted-foreground">No services found</p>
+            </div>
+          )}
+          {!loading && filteredServices.length > 0 && (
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              key={selectedCategory}
+              className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            >
+              {filteredServices.map((s) => (
                 <motion.div
-                  className="absolute bottom-0 left-0 right-0 h-1 bg-primary"
-                  initial={{ scaleX: 0 }}
-                  whileInView={{ scaleX: 1 }}
-                  transition={{ duration: 0.5 }}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
+                  key={s._id}
+                  variants={itemVariants}
+                  onClick={() => handleServiceClick(s)}
+                  className="group relative cursor-pointer overflow-hidden rounded-2xl bg-card/80 shadow-lg backdrop-blur-sm transition-all hover:shadow-2xl"
+                  whileHover={{ y: -8 }}
+                >
+                  <>
+                    <div className="relative h-40 w-full overflow-hidden">
+                      <img
+                        src={serviceImages[s.image] || serviceSwedish}
+                        alt={s.name}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                      <span className="absolute left-3 top-3 rounded-full bg-primary/90 px-2 py-0.5 text-xs font-medium text-primary-foreground">
+                        {(s.category || "General")}
+                      </span>
+                    </div>
+                    <div className="p-5">
+                      <h3 className="font-serif text-lg font-semibold text-foreground line-clamp-1">{s.name}</h3>
+                      <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{s.shortDescription}</p>
+                      <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                          <Clock size={16} />
+                          <span>{(s.durations?.map(d => d.minutes).join("/") || 60)} min</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-primary">{s.price}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
         </div>
+
       </section>
 
       {/* Inline CTA with image */}
