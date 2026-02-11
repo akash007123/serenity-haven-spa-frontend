@@ -257,7 +257,7 @@ const Gallery = () => {
               className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground md:text-xl"
             >
               Explore our tranquil spaces, premium products, and the serene atmosphere
-              that awaits you at Serenity Spa.
+              that awaits you at Tripod Spa.
             </motion.p>
 
             {/* Decorative Elements */}

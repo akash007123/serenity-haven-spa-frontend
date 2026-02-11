@@ -1,4 +1,4 @@
-# Serenity Spa - Luxury Massage & Wellness
+# Tripod Spa - Luxury Massage & Wellness
 
 A modern, responsive website for a luxury spa and wellness center.
 

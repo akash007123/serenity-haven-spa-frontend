@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Phone, Mail, MapPin, Instagram, Facebook, Twitter, Youtube, ArrowRight, Clock } from "lucide-react";
+import api from "../../lib/api";
 
 const navLinks = [
   { path: "/", label: "Home" },
@@ -27,13 +28,25 @@ const servicesLinks = [
 const Footer = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubscribe = (e: React.FormEvent) => {
+  const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    if (!email) return;
+
+    setLoading(true);
+    setError("");
+
+    try {
+      await api.subscribeToNewsletter(email);
       setSubscribed(true);
       setEmail("");
       setTimeout(() => setSubscribed(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to subscribe");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -49,7 +62,7 @@ const Footer = () => {
         {/* Brand & Newsletter */}
         <div className="lg:col-span-2">
           <div className="mb-6">
-            <h3 className="font-serif text-3xl font-bold text-secondary mb-2">Serenity Spa</h3>
+            <h3 className="font-serif text-3xl font-bold text-secondary mb-2">Tripod Spa</h3>
             <p className="text-sm leading-relaxed text-secondary/70 max-w-sm">
               Your sanctuary of peace and rejuvenation. We blend ancient healing traditions with modern luxury to create unforgettable wellness experiences.
             </p>
@@ -70,22 +83,33 @@ const Footer = () => {
                 <span className="text-sm font-medium">✓ Thank you for subscribing!</span>
               </div>
             ) : (
-              <form onSubmit={handleSubscribe} className="flex gap-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  className="flex-1 px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent focus:bg-black/40 transition-all text-sm"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="px-5 py-3 bg-accent hover:bg-accent/90 text-white rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/25 flex items-center gap-2 group"
-                >
-                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                </button>
-              </form>
+              <>
+                <form onSubmit={handleSubscribe} className="flex gap-2">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="flex-1 px-4 py-3 bg-black/30 border border-white/10 rounded-xl text-secondary placeholder:text-secondary/40 focus:outline-none focus:border-accent focus:bg-black/40 transition-all text-sm"
+                    required
+                    disabled={loading}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="px-5 py-3 bg-accent hover:bg-accent/90 disabled:bg-accent/50 text-white rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-accent/25 flex items-center gap-2 group"
+                  >
+                    {loading ? (
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    ) : (
+                      <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                    )}
+                  </button>
+                </form>
+                {error && (
+                  <p className="text-xs text-red-400 mt-2">{error}</p>
+                )}
+              </>
             )}
           </div>
 

@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import type { Variants } from "framer-motion";
-import { CheckCircle, Clock, Shield, Sparkles, Calendar as CalendarIcon, ArrowRight, User, Phone, Mail, MessageSquare, Star, MapPin, Phone as PhoneIcon } from "lucide-react";
+import { CheckCircle, Clock, Shield, Sparkles, Calendar as CalendarIcon, ArrowRight, User, Phone, Mail, MessageSquare, Star, MapPin, Phone as PhoneIcon, Loader2 } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
 import { services, getPopularServices } from "@/data/services";
 import { therapists } from "@/data/therapists";
 import spaProcess from "@/assets/spa-process.jpg";
+import api from "@/lib/api";
 
 const timeSlots = [
   { time: "09:00", label: "9:00 AM" },
@@ -75,6 +76,8 @@ const Booking = () => {
   const [form, setForm] = useState<FormData>(initialForm);
   const [errors, setErrors] = useState<Partial<FormData>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(1);
   const { scrollY } = useScroll();
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
@@ -99,9 +102,31 @@ const Booking = () => {
     return Object.keys(e).length === 0;
   };
 
-  const handleSubmit = (ev: React.FormEvent) => {
+  const handleSubmit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (validate()) setSubmitted(true);
+    setError(null);
+    
+    if (!validate()) return;
+
+    setLoading(true);
+
+    try {
+      await api.createBooking({
+        name: form.name,
+        phone: form.phone,
+        email: form.email,
+        service: form.service,
+        therapist: form.therapist,
+        date: form.date,
+        time: form.time,
+        message: form.message,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create booking. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
@@ -695,18 +720,39 @@ const Booking = () => {
                           Continue
                         </motion.button>
                       ) : (
-                        <motion.button
-                          type="submit"
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
-                        >
-                          <span className="relative z-10">Confirm Booking</span>
-                          <ArrowRight
-                            size={18}
-                            className="transition-transform group-hover:translate-x-1"
-                          />
-                        </motion.button>
+                        <>
+                          <motion.button
+                            type="submit"
+                            whileHover={{ scale: loading ? 1 : 1.02 }}
+                            whileTap={{ scale: loading ? 1 : 0.98 }}
+                            disabled={loading}
+                            className="group relative inline-flex items-center gap-2 overflow-hidden rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {loading ? (
+                              <>
+                                <Loader2 size={18} className="animate-spin" />
+                                Booking...
+                              </>
+                            ) : (
+                              <>
+                                <span className="relative z-10">Confirm Booking</span>
+                                <ArrowRight
+                                  size={18}
+                                  className="transition-transform group-hover:translate-x-1"
+                                />
+                              </>
+                            )}
+                          </motion.button>
+                          {error && (
+                            <motion.p
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              className="mt-4 text-center text-sm text-destructive"
+                            >
+                              {error}
+                            </motion.p>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

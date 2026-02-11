@@ -49,7 +49,7 @@ const Header = () => {
           className="group relative flex items-center gap-3 font-serif text-2xl font-bold tracking-wide text-[hsl(25_25%_15%)] md:text-3xl"
         >
           <span className="relative">
-            Serenity
+            Tripod
             <span className="text-primary">.</span>
             <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-primary to-[hsl(152_25%_45%)] transition-all duration-300 group-hover:w-full" />
           </span>

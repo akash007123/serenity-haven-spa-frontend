@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import type { Variants } from "framer-motion";
-import { Phone, Mail, MapPin, Send, CheckCircle, Clock, Instagram, Facebook, Sparkles, MessageCircle, ArrowRight, Calendar } from "lucide-react";
+import { Phone, Mail, MapPin, Send, CheckCircle, Clock, Instagram, Facebook, Sparkles, MessageCircle, ArrowRight, Calendar, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import AnimatedSection from "@/components/AnimatedSection";
 import spaExterior from "@/assets/spa-exterior.jpg";
 import spaLounge from "@/assets/spa-lounge.jpg";
+import api from "@/lib/api";
 
 const contactInfo = [
   {
@@ -84,14 +85,35 @@ const itemVariants: Variants = {
 const Contact = () => {
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { scrollY } = useScroll();
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 400], [1, 1.05]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.name && form.email && form.message) {
+    setError(null);
+    
+    if (!form.name || !form.email || !form.message) {
+      setError("Please fill in all required fields");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await api.createContact({
+        name: form.name,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+      });
       setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to send message. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -350,7 +372,7 @@ const Contact = () => {
                 className="relative overflow-hidden rounded-2xl shadow-2xl"
               >
                 <iframe
-                  title="Serenity Spa Location"
+                  title="Tripod Spa Location"
                   src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1234567890"
                   width="100%"
                   height="300"
@@ -548,16 +570,35 @@ const Contact = () => {
                   </div>
 
                   <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                    whileHover={{ scale: loading ? 1 : 1.02 }}
+                    whileTap={{ scale: loading ? 1 : 0.98 }}
                     type="submit"
-                    className="group mt-6 flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
+                    disabled={loading}
+                    className="group mt-6 flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-primary px-8 py-3.5 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span className="relative z-10 flex items-center gap-2">
-                      Send Message
-                      <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
-                    </span>
+                    {loading ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <span className="relative z-10 flex items-center gap-2">
+                          Send Message
+                          <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" />
+                        </span>
+                      </>
+                    )}
                   </motion.button>
+                  {error && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 text-center text-sm text-destructive"
+                    >
+                      {error}
+                    </motion.p>
+                  )}
                 </motion.form>
               )}
             </motion.div>
