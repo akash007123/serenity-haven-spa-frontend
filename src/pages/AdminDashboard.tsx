@@ -10,7 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import api from "../lib/api";
+import api, { Therapist } from "../lib/api";
 import {
   ChartContainer,
   ChartTooltip,
@@ -98,6 +98,14 @@ const formatCurrency = (value: number) => {
   }).format(value);
 };
 
+const getProfilePicUrl = (pic?: string) => {
+  if (!pic) return null;
+  if (pic.startsWith("http")) return pic;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  const baseUrl = API_URL.replace("/api", "");
+  return `${baseUrl}/${pic.replace(/^\/+/, "")}`;
+};
+
 const AdminDashboard = () => {
   const [data, setData] = useState<DashboardData | null>(null);
   const [analytics, setAnalytics] = useState<{
@@ -127,14 +135,16 @@ const AdminDashboard = () => {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [dashboardResponse, analyticsResponse] = await Promise.all([
+        const [dashboardResponse, analyticsResponse, therapistsResponse] = await Promise.all([
           api.getDashboardStats(),
           api.getAnalytics(),
+          api.getTherapists({ active: undefined }),
         ]);
         
         if (dashboardResponse.success && dashboardResponse.data) {
@@ -145,6 +155,10 @@ const AdminDashboard = () => {
 
         if (analyticsResponse.success && analyticsResponse.data) {
           setAnalytics(analyticsResponse.data);
+        }
+
+        if (therapistsResponse.success && therapistsResponse.data) {
+          setTherapists(therapistsResponse.data);
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -478,6 +492,108 @@ const AdminDashboard = () => {
           )}
         </motion.div>
       </div>
+
+      {/* Therapists Section */}
+      <motion.div variants={itemVariants} className="rounded-2xl bg-card shadow-lg">
+        <div className="flex items-center justify-between border-b p-6">
+          <h2 className="font-serif text-xl font-semibold text-foreground">
+            Therapists
+          </h2>
+          <Link
+            to="/admin/therapists"
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            View All
+          </Link>
+        </div>
+        {therapists.length === 0 ? (
+          <div className="p-6 text-center text-muted-foreground">
+            No therapists yet
+          </div>
+        ) : (
+          <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {therapists.slice(0, 8).map((therapist) => (
+              <div
+                key={therapist._id}
+                className="overflow-hidden rounded-xl bg-muted/50 transition-all hover:bg-muted"
+              >
+                {/* Profile Pic */}
+                <div className="relative h-32 bg-gradient-to-br from-primary/20 to-primary/5">
+                  {therapist.profilePic ? (
+                    <img
+                      src={getProfilePicUrl(therapist.profilePic) || ""}
+                      alt={therapist.name}
+                      className="absolute inset-x-0 bottom-0 h-24 w-full object-cover"
+                    />
+                  ) : (
+                    <div className="absolute inset-x-0 bottom-0 flex h-24 items-center justify-center bg-primary/10">
+                      <span className="text-4xl font-bold text-primary">
+                        {therapist.name.charAt(0)}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute top-2 right-2">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      therapist.isActive
+                        ? "bg-green-100 text-green-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}>
+                      {therapist.isActive ? "Active" : "Inactive"}
+                    </span>
+                  </div>
+                  {therapist.isFeatured && (
+                    <div className="absolute top-2 left-2">
+                      <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        Featured
+                      </span>
+                    </div>
+                  )}
+                </div>
+                {/* Info */}
+                <div className="p-4">
+                  <h3 className="font-serif text-lg font-semibold text-foreground truncate">
+                    {therapist.name}
+                  </h3>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {therapist.title}
+                  </p>
+                  <div className="mt-2 flex items-center gap-2 text-sm">
+                    <span className="text-amber-500">★</span>
+                    <span className="font-medium">{therapist.rating.toFixed(1)}</span>
+                    <span className="text-muted-foreground">({therapist.reviewCount} reviews)</span>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>📚</span>
+                    <span>{therapist.experience}</span>
+                  </div>
+                  {therapist.languages && therapist.languages.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {therapist.languages.slice(0, 3).map((lang) => (
+                        <span
+                          key={lang}
+                          className="rounded bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                        >
+                          {lang}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-3 flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {therapist.bookingCount} bookings
+                    </span>
+                    {therapist.specialties && therapist.specialties.length > 0 && (
+                      <span className="text-xs text-muted-foreground truncate max-w-[120px]">
+                        {therapist.specialties[0]}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
 
       {/* Charts Section */}
       <motion.div variants={itemVariants} className="space-y-8">
