@@ -43,6 +43,7 @@ interface Contact {
   _id: string;
   name: string;
   email: string;
+  mobile?: string;
   subject?: string;
   message: string;
   status: "new" | "read" | "replied" | "archived";
@@ -229,7 +230,7 @@ const AdminContacts = () => {
 
   const handleReply = () => {
     setReplyMode(true);
-    setReplyMessage(`Hi ${selectedContact?.name.split(" ")[0]},\n\nThank you for reaching out. \n\nBest regards,\nSerenity Spa Team`);
+    setReplyMessage(`Hi ${selectedContact?.name.split(" ")[0]},\n\nThank you for reaching out. \n\nBest regards,\nTripod Wellness Team`);
   };
 
   const handleSendReply = async () => {
@@ -591,15 +592,18 @@ const AdminContacts = () => {
                           <p className="text-sm text-muted-foreground">
                             {contact.email}
                           </p>
+                          {contact.mobile && (
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {contact.mobile}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <p className="font-medium text-foreground">
                         {contact.subject || "General Inquiry"}
-                      </p>
-                      <p className="line-clamp-1 text-sm text-muted-foreground">
-                        {contact.message}
                       </p>
                     </td>
                     <td className="px-6 py-4">
@@ -724,11 +728,17 @@ const AdminContacts = () => {
               </div>
 
               {/* Contact Info */}
-              <div className="flex gap-4 text-sm">
+              <div className="flex flex-wrap gap-4 text-sm">
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <Mail className="h-4 w-4" />
                   {selectedContact.email}
                 </div>
+                {selectedContact.mobile && (
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Phone className="h-4 w-4" />
+                    {selectedContact.mobile}
+                  </div>
+                )}
               </div>
 
               {/* Subject */}

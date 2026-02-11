@@ -443,7 +443,7 @@ const Booking = () => {
                       </a>
                       <div className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground">
                         <MapPin size={18} className="text-primary" />
-                        123 Serenity Lane, Wellness City
+                        123 Tripod Wellness Lane, Wellness City
                       </div>
                     </div>
                   </div>

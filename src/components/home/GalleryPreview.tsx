@@ -74,7 +74,7 @@ const GalleryPreview = () => {
           >
             Step Inside{" "}
             <span className="relative">
-              <span className="relative z-10">Serenity</span>
+              <span className="relative z-10">Tripod Wellness</span>
               <motion.span
                 className="absolute -bottom-2 left-0 right-0 h-3 rounded-full bg-primary/20"
                 initial={{ scaleX: 0, originX: 0 }}

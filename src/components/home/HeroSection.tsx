@@ -21,7 +21,7 @@ const HeroSection = () => {
           animate={{ scale: 1 }}
           transition={{ duration: 2, ease: "easeOut" }}
           src={heroImage}
-          alt="Serenity Spa interior"
+          alt="Tripod Wellness Spa interior"
           className="h-full w-full object-cover"
         />
         {/* Multi-layer Gradient Overlay */}
@@ -146,7 +146,7 @@ const HeroSection = () => {
               transition={{ duration: 1, delay: 0.8 }}
               className="relative inline-block bg-gradient-to-r from-accent via-accent/80 to-primary bg-clip-text text-transparent"
             >
-              Serenity
+              Tripod Wellness
             </motion.span>
             <br />
             <motion.span

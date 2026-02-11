@@ -430,7 +430,7 @@ const FAQ = () => {
             {/* Contact options */}
             <div className="relative mt-8 flex flex-wrap items-center justify-center gap-4">
               <motion.a
-                href="mailto:hello@serenityspa.com"
+                href="mailto:wellnesstripod@gmail.com"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center gap-2 rounded-full border border-border bg-card/80 px-6 py-3 text-sm font-medium text-foreground shadow backdrop-blur-sm transition-all hover:shadow-md"
@@ -439,7 +439,7 @@ const FAQ = () => {
                 Email Us
               </motion.a>
               <motion.a
-                href="tel:+15551234567"
+                href="tel:+919424940252"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="flex items-center gap-2 rounded-full border border-border bg-card/80 px-6 py-3 text-sm font-medium text-foreground shadow backdrop-blur-sm transition-all hover:shadow-md"

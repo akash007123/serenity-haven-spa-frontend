@@ -60,7 +60,7 @@ const About = () => (
       >
         <img
           src={aboutImage}
-          alt="Serenity Spa interior"
+          alt="Tripod Wellness Spa"
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/90 md:bg-gradient-to-r md:from-background/80 md:via-background/60 md:to-background/80" />
@@ -146,7 +146,7 @@ const About = () => (
           >
             About{" "}
             <span className="relative">
-              <span className="relative z-10 text-primary">Serenity</span>
+              <span className="relative z-10 text-primary">Tripod Wellness</span>
               <motion.span
                 className="absolute -bottom-2 left-0 right-0 h-3 rounded-full bg-primary/20"
                 initial={{ scaleX: 0, originX: 0 }}
@@ -293,7 +293,7 @@ const About = () => (
                 from Passion
               </h2>
               <p className="mt-6 leading-relaxed text-muted-foreground md:text-lg">
-                Serenity Spa was founded with a simple belief: everyone deserves a space
+                Tripod Wellness with a simple belief: everyone deserves a space
                 to slow down, breathe, and heal. What started as a small studio has grown
                 into a premier wellness destination, yet our commitment to personalized,
                 heartfelt care remains unchanged.
@@ -543,7 +543,7 @@ const About = () => (
             className="font-serif text-3xl font-medium leading-relaxed text-foreground md:text-4xl"
           >
             We believe wellness is not a luxury — it's a necessity. Every treatment at
-            Serenity Spa is a mindful ritual designed to restore harmony between body,
+            Tripod Wellness Spa is a mindful ritual designed to restore harmony between body,
             mind, and spirit. We honor the ancient wisdom of healing while embracing
             modern science to deliver results you can feel.
           </motion.h2>

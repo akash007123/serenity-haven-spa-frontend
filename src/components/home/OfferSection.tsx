@@ -85,7 +85,7 @@ const OfferSection = () => (
               className="mb-8 text-lg leading-relaxed text-muted-foreground"
             >
               Book your first treatment and enjoy 20% off any service. New guests only.
-              Experience the Serenity difference today.
+              Experience the Tripod Wellness difference today.
             </motion.p>
 
             {/* Features grid */}
@@ -188,13 +188,13 @@ const OfferSection = () => (
             >
               <img
                 src={spaExterior}
-                alt="Serenity Spa Exterior"
+                alt="Tripod Wellness Spa Exterior"
                 className="h-[500px] w-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6">
                 <p className="font-serif text-2xl font-bold text-white">
-                  Serenity Wellness
+                  Tripod Wellness
                 </p>
                 <p className="text-white/80">Your journey to relaxation starts here</p>
               </div>

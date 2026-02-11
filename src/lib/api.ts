@@ -17,6 +17,7 @@ interface Contact {
   _id: string;
   name: string;
   email: string;
+  mobile: string;
   subject?: string;
   message: string;
   status: "new" | "read" | "replied" | "archived";
@@ -142,6 +143,7 @@ class ApiService {
   async createContact(data: {
     name: string;
     email: string;
+    mobile?: string;
     subject?: string;
     message: string;
   }): Promise<ApiResponse<{ id: string }>> {

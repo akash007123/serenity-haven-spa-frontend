@@ -12,15 +12,15 @@ const contactInfo = [
   {
     icon: MapPin,
     label: "Visit Us",
-    value: "123 Tranquil Lane",
-    subValue: "Wellness City, WC 10001",
+    value: "Gali No. 1, Kala Patthar",
+    subValue: "Nanakheda, Ujjain",
     color: "text-red-500",
     bg: "bg-red-100",
   },
   {
     icon: Phone,
     label: "Call Us",
-    value: "(555) 123-4567",
+    value: "+91-9424940252",
     subValue: "Mon-Sat: 9AM - 8PM",
     color: "text-green-500",
     bg: "bg-green-100",
@@ -28,7 +28,7 @@ const contactInfo = [
   {
     icon: Mail,
     label: "Email Us",
-    value: "hello@serenityspa.com",
+    value: "wellnesstripod@gmail.com",
     subValue: "We reply within 24 hours",
     color: "text-blue-500",
     bg: "bg-blue-100",
@@ -83,7 +83,7 @@ const itemVariants: Variants = {
 };
 
 const Contact = () => {
-  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", mobile: "", subject: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -106,6 +106,7 @@ const Contact = () => {
       await api.createContact({
         name: form.name,
         email: form.email,
+        mobile: form.mobile,
         subject: form.subject,
         message: form.message,
       });
@@ -132,7 +133,7 @@ const Contact = () => {
         >
           <img
             src={spaExterior}
-            alt="Serenity Spa exterior"
+            alt="Tripod Wellness Spa exterior"
             className="h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/70 to-background/90 md:bg-gradient-to-r md:from-background/80 md:via-background/60 md:to-background/80" />
@@ -251,16 +252,16 @@ const Contact = () => {
                 <div className="rounded-full bg-primary/10 p-2 transition-colors group-hover:bg-primary">
                   <Phone size={18} className="text-primary" />
                 </div>
-                <span>(555) 123-4567</span>
+                <span>+91-9424940252</span>
               </a>
               <a
-                href="mailto:hello@serenityspa.com"
+                href="mailto:wellnesstripod@gmail.com"
                 className="group flex items-center gap-2 rounded-full border border-border bg-card/80 px-6 py-3 text-sm font-medium text-foreground shadow backdrop-blur-sm transition-all hover:shadow-md hover:border-primary/50"
               >
                 <div className="rounded-full bg-primary/10 p-2 transition-colors group-hover:bg-primary">
                   <Mail size={18} className="text-primary" />
                 </div>
-                <span>hello@serenityspa.com</span>
+                <span>wellnesstripod@gmail.com</span>
               </a>
             </motion.div>
           </div>
@@ -372,13 +373,14 @@ const Contact = () => {
                 className="relative overflow-hidden rounded-2xl shadow-2xl"
               >
                 <iframe
-                  title="Tripod Spa Location"
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3022.1!2d-73.98!3d40.75!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDDCsDQ1JzAwLjAiTiA3M8KwNTgnNDguMCJX!5e0!3m2!1sen!2sus!4v1234567890"
+                  title="Tripod Wellness Location"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2861.183323262472!2d75.78303562400542!3d23.154548511392765!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3963748b65bd2b8d%3A0xb2bceac605f097d0!2sKala%20Patthar%20Colony%2C%20Dipti%20Parisar%2C%20Ujjain%2C%20Madhya%20Pradesh%20456010!5e1!3m2!1sen!2sin!4v1770799900725!5m2!1sen!2sin"
                   width="100%"
                   height="300"
                   style={{ border: 0 }}
                   allowFullScreen
                   loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </motion.div>
 
@@ -482,7 +484,7 @@ const Contact = () => {
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       setSubmitted(false);
-                      setForm({ name: "", email: "", subject: "", message: "" });
+                      setForm({ name: "", email: "", mobile: "", subject: "", message: "" });
                     }}
                     className="mt-8 rounded-full bg-primary px-8 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
                   >
@@ -545,8 +547,19 @@ const Contact = () => {
                           required
                         />
                       </div>
-                    </div>
-                    <div>
+                      <div>
+                        <label className={labelClass}>
+                          <Phone size={14} className="mr-1" /> Mobile Number
+                        </label>
+                        <input
+                          type="tel"
+                          className={inputClass}
+                          placeholder="+91-9424940252"
+                          value={form.mobile}
+                          onChange={(e) => setForm((p) => ({ ...p, mobile: e.target.value }))}
+                        />
+                      </div>
+                      <div>
                       <label className={labelClass}>Subject</label>
                       <input
                         className={inputClass}
@@ -555,6 +568,7 @@ const Contact = () => {
                         onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
                       />
                     </div>
+                    </div>                
                     <div>
                       <label className={labelClass}>
                         <span className="text-primary">●</span> Your Message *

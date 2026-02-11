@@ -11,14 +11,14 @@ const PreHeader = () => (
       <div className="flex flex-wrap items-center gap-3 lg:gap-5">
         {/* Phone */}
         <a 
-          href="tel:+15551234567" 
+          href="tel:+919424940252" 
           className="group flex items-center gap-1.5 transition-all duration-300 hover:scale-105"
         >
           <span className="relative">
             <Phone size={14} className="transition-transform group-hover:rotate-12" />
             <span className="absolute -inset-1 rounded-full bg-accent/20 opacity-0 transition-opacity group-hover:opacity-100" />
           </span>
-          <span className="hidden sm:inline">(555) 123-4567</span>
+          <span className="hidden sm:inline">+91-9424940252</span>
         </a>
         
         {/* Divider */}
@@ -26,14 +26,14 @@ const PreHeader = () => (
         
         {/* Email */}
         <a 
-          href="mailto:hello@serenityspa.com" 
+          href="mailto:wellnesstripod@gmail.com" 
           className="group hidden items-center gap-1.5 transition-all duration-300 hover:scale-105 sm:flex"
         >
           <span className="relative">
             <Mail size={14} className="transition-transform group-hover:-rotate-12" />
             <span className="absolute -inset-1 rounded-full bg-accent/20 opacity-0 transition-opacity group-hover:opacity-100" />
           </span>
-          <span className="hidden lg:inline">hello@serenityspa.com</span>
+          <span className="hidden lg:inline">wellnesstripod@gmail.com</span>
           <span className="lg:hidden">Email Us</span>
         </a>
         
@@ -43,7 +43,7 @@ const PreHeader = () => (
         {/* Location */}
         <span className="hidden items-center gap-1.5 md:flex">
           <MapPin size={14} className="text-accent" />
-          <span className="hidden xl:inline">123 Tranquil Lane, Wellness City</span>
+          <span className="hidden xl:inline">Gali No. 1, Kala Patthar, Nanakheda, Ujjain</span>
           <span className="xl:hidden">Visit Us</span>
         </span>
       </div>

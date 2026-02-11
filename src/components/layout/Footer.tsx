@@ -51,7 +51,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-gradient-to-b from-[#2d1f1a] via-[#1a1210] to-[#0f0a08] text-secondary relative overflow-hidden">
+    <footer className="bg-gradient-to-b from-[#45735D] via-[#62a585] to-[#45735D] text-secondary relative overflow-hidden">
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-accent via-accent/50 to-accent" />
       <div className="absolute -top-24 -right-24 w-64 h-64 bg-accent/10 rounded-full blur-3xl" />
@@ -186,19 +186,19 @@ const Footer = () => {
               <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl text-accent shrink-0 border border-white/5">
                 <MapPin size={18} />
               </div>
-              <span>123 Tranquil Lane<br />Wellness City, WC 12345</span>
+              <span>Gali No. 1, Kala Patthar<br />Nanakheda, Ujjain</span>
             </li>
             <li className="flex items-center gap-3 text-secondary/70">
               <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl text-accent shrink-0 border border-white/5">
                 <Phone size={18} />
               </div>
-              <span>(555) 123-4567</span>
+              <span>+91-9424940252</span>
             </li>
             <li className="flex items-center gap-3 text-secondary/70">
               <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl text-accent shrink-0 border border-white/5">
                 <Mail size={18} />
               </div>
-              <span>hello@serenityspa.com</span>
+              <span>wellnesstripod@gmail.com</span>
             </li>
             <li className="flex items-center gap-3 text-secondary/70">
               <div className="w-10 h-10 flex items-center justify-center bg-white/5 rounded-xl text-accent shrink-0 border border-white/5">
@@ -216,7 +216,7 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="relative z-10 border-t border-white/10 py-6">
         <div className="container-spa flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-secondary/50">
-          <p>© {new Date().getFullYear()} Serenity Spa. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Tripod Wellness Spa. All rights reserved.</p>
           <div className="flex gap-6">
             <Link to="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-accent transition-colors">Terms of Service</Link>
