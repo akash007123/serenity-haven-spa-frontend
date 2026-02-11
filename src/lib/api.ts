@@ -148,6 +148,34 @@ interface ServiceCategory {
   icon: string;
 }
 
+export interface TherapistAvailability {
+  day: string;
+  startTime?: string;
+  endTime?: string;
+}
+
+export interface Therapist {
+  _id: string;
+  name: string;
+  title: string;
+  slug?: string;
+  specialties: string[];
+  experience: string;
+  bio: string;
+  profilePic?: string;
+  email?: string;
+  phone?: string;
+  languages?: string[];
+  availability: TherapistAvailability[];
+  rating: number;
+  reviewCount: number;
+  bookingCount: number;
+  isActive: boolean;
+  isFeatured: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 class ApiService {
   private baseUrl: string;
 
@@ -453,6 +481,73 @@ class ApiService {
 
   async getServiceCategories(): Promise<ApiResponse<ServiceCategory[]>> {
     return this.request<ServiceCategory[]>("/services/categories");
+  }
+
+  // Therapists API
+  async getTherapists(params?: {
+    active?: boolean;
+    featured?: boolean;
+    search?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<ApiResponse<Therapist[]>> {
+    const queryParams = new URLSearchParams();
+    if (params?.active !== undefined) queryParams.append("active", params.active.toString());
+    if (params?.featured !== undefined) queryParams.append("featured", params.featured.toString());
+    if (params?.search) queryParams.append("search", params.search);
+    if (params?.page) queryParams.append("page", params.page.toString());
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+
+    const query = queryParams.toString();
+    return this.request<Therapist[]>('/therapists' + (query ? '?' + query : ''));
+  }
+
+  async getTherapistById(id: string): Promise<ApiResponse<Therapist>> {
+    return this.request<Therapist>(`/therapists/${id}`);
+  }
+
+  async createTherapist(data: FormData): Promise<ApiResponse<Therapist>> {
+    const response = await fetch(`${this.baseUrl}/therapists`, {
+      method: 'POST',
+      body: data,
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'An error occurred');
+    }
+    return result;
+  }
+
+  async updateTherapist(id: string, data: FormData): Promise<ApiResponse<Therapist>> {
+    const response = await fetch(`${this.baseUrl}/therapists/${id}`, {
+      method: 'PUT',
+      body: data,
+    });
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.message || 'An error occurred');
+    }
+    return result;
+  }
+
+  async deleteTherapist(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/therapists/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async toggleTherapistStatus(id: string): Promise<ApiResponse<Therapist>> {
+    return this.request<Therapist>(`/therapists/${id}/toggle-status`, {
+      method: 'PATCH',
+    });
+  }
+
+  async toggleTherapistFeatured(id: string): Promise<ApiResponse<Therapist>> {
+    return this.request<Therapist>(`/therapists/${id}/toggle-featured`, {
+      method: 'PATCH',
+    });
   }
 }
 

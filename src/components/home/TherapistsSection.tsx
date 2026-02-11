@@ -1,8 +1,11 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { Star, Clock, Award, MessageCircleHeart } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
-import { therapists } from "@/data/therapists";
+import api, { Therapist } from "@/lib/api";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -29,167 +32,240 @@ const cardVariants: Variants = {
   },
 };
 
-const TherapistsSection = () => (
-  <section className="relative overflow-hidden py-20 md:py-28">
-    {/* Background decoration */}
-    <div className="absolute inset-0 -z-10">
-      <div className="absolute top-0 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
-      <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-amber-100/20 blur-3xl" />
-      <div className="absolute top-1/2 right-0 h-64 w-64 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
-    </div>
+const getProfilePicUrl = (pic?: string) => {
+  if (!pic) return null;
+  if (pic.startsWith("http")) return pic;
+  const baseUrl = API_URL.replace("/api", "");
+  return `${baseUrl}/${pic.replace(/^\/+/, "")}`;
+};
 
-    <div className="container-spa">
-      {/* Header */}
-      <AnimatedSection className="mb-16 text-center">
-        <motion.span
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-primary"
-        >
-          <MessageCircleHeart size={12} />
-          Our Team
-        </motion.span>
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="font-serif text-4xl font-medium leading-tight text-foreground md:text-5xl lg:text-6xl"
-        >
-          Meet Our{" "}
-          <span className="relative">
-            <span className="relative z-10">Therapists</span>
-            <motion.span
-              className="absolute -bottom-2 left-0 right-0 h-3 rounded-full bg-primary/20"
-              initial={{ scaleX: 0, originX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            />
-          </span>
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground"
-        >
-          Our team of certified professionals brings passion and expertise to every
-          treatment, ensuring you receive the highest quality care.
-        </motion.p>
-      </AnimatedSection>
+const TherapistsSection = () => {
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-      {/* Therapists Grid */}
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        {therapists.map((t, i) => (
-          <motion.div
-            key={t.id}
-            variants={cardVariants}
-            className="group relative overflow-hidden rounded-2xl bg-card/80 p-6 text-center shadow-lg backdrop-blur-sm transition-all hover:shadow-2xl"
-            whileHover={{ y: -8 }}
-          >
-            {/* Background gradient */}
-            <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+  useEffect(() => {
+    const fetchTherapists = async () => {
+      try {
+        setLoading(true);
+        const response = await api.getTherapists({ active: true });
+        if (response.success && response.data) {
+          setTherapists(response.data);
+        } else {
+          setError(response.message || "Failed to fetch therapists");
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            {/* Avatar container */}
-            <div className="relative mb-5 flex justify-center">
-              <motion.div
-                className="relative"
-                whileHover={{ scale: 1.05 }}
-              >
-                {/* Avatar circle */}
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25">
-                  <span className="font-serif text-2xl font-bold">
-                    {t.name.split(" ").map((n) => n[0]).join("")}
-                  </span>
-                </div>
+    fetchTherapists();
+  }, []);
 
-                {/* Rating badge */}
-                <div className="absolute -right-1 -bottom-1 flex items-center gap-0.5 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-900 shadow">
-                  <Star size={12} fill="currentColor" />
-                  4.9
-                </div>
-              </motion.div>
-            </div>
+  // Fallback to static data if no therapists from API
+  const displayTherapists = therapists.length > 0 ? therapists : [];
 
-            {/* Content */}
-            <h3 className="font-serif text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
-              {t.name}
-            </h3>
-            <p className="mb-2 text-sm font-medium text-primary">{t.title}</p>
+  return (
+    <section className="relative overflow-hidden py-20 md:py-28">
+      {/* Background decoration */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-0 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-primary/5 blur-3xl" />
+        <div className="absolute bottom-0 left-0 h-96 w-96 rounded-full bg-amber-100/20 blur-3xl" />
+        <div className="absolute top-1/2 right-0 h-64 w-64 -translate-y-1/2 rounded-full bg-primary/5 blur-3xl" />
+      </div>
 
-            {/* Experience badge */}
-            <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs">
-              <Clock size={14} className="text-primary" />
-              <span className="font-medium text-foreground">{t.experience}</span>
-            </div>
-
-            {/* Bio */}
-            <p className="mb-4 text-sm leading-relaxed text-muted-foreground line-clamp-2">
-              {t.bio}
-            </p>
-
-            {/* Specialties */}
-            <div className="flex flex-wrap justify-center gap-1.5">
-              {t.specialties.slice(0, 3).map((s) => (
-                <motion.span
-                  key={s}
-                  whileHover={{ scale: 1.05 }}
-                  className="cursor-pointer rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
-                >
-                  {s}
-                </motion.span>
-              ))}
-              {t.specialties.length > 3 && (
-                <span className="rounded-full bg-secondary/50 px-2.5 py-1 text-xs text-secondary-foreground">
-                  +{t.specialties.length - 3}
-                </span>
-              )}
-            </div>
-
-            {/* Decorative corner */}
-            <div className="absolute top-0 right-0 h-16 w-16 overflow-hidden">
-              <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 transition-transform duration-300 group-hover:scale-150" />
-            </div>
-
-            {/* Bottom accent */}
-            <motion.div
-              className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-full bg-primary"
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              transition={{ delay: 0.3 + i * 0.1 }}
-            />
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* Join CTA */}
-      <AnimatedSection className="mt-14 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.5 }}
-        >
+      <div className="container-spa">
+        {/* Header */}
+        <AnimatedSection className="mb-16 text-center">
           <motion.span
-            whileHover={{ scale: 1.02 }}
-            className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-6 py-3 text-sm font-medium text-primary"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-4 py-1.5 text-xs font-medium uppercase tracking-wider text-primary"
           >
-            <Award size={16} />
-            Join our team of expert therapists
+            <MessageCircleHeart size={12} />
+            Our Team
           </motion.span>
-        </motion.div>
-      </AnimatedSection>
-    </div>
-  </section>
-);
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="font-serif text-4xl font-medium leading-tight text-foreground md:text-5xl lg:text-6xl"
+          >
+            Meet Our{" "}
+            <span className="relative">
+              <span className="relative z-10">Therapists</span>
+              <motion.span
+                className="absolute -bottom-2 left-0 right-0 h-3 rounded-full bg-primary/20"
+                initial={{ scaleX: 0, originX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+              />
+            </span>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground"
+          >
+            Our team of certified professionals brings passion and expertise to every
+            treatment, ensuring you receive the highest quality care.
+          </motion.p>
+        </AnimatedSection>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse rounded-2xl bg-card/80 p-6 text-center shadow-lg">
+                <div className="mx-auto mb-5 h-24 w-24 rounded-full bg-muted" />
+                <div className="mx-auto mb-2 h-6 w-32 rounded bg-muted" />
+                <div className="mx-auto mb-3 h-4 w-24 rounded bg-muted" />
+                <div className="mx-auto h-4 w-full rounded bg-muted" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center">
+            <p className="text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* Therapists Grid */}
+        {!loading && !error && displayTherapists.length === 0 && (
+          <div className="text-center">
+            <p className="text-muted-foreground">No therapists available at the moment.</p>
+          </div>
+        )}
+
+        {!loading && !error && displayTherapists.length > 0 && (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          >
+            {displayTherapists.map((t, i) => (
+              <motion.div
+                key={t._id}
+                variants={cardVariants}
+                className="group relative overflow-hidden rounded-2xl bg-card/80 p-6 text-center shadow-lg backdrop-blur-sm transition-all hover:shadow-2xl"
+                whileHover={{ y: -8 }}
+              >
+                {/* Background gradient */}
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+                {/* Avatar container */}
+                <div className="relative mb-5 flex justify-center">
+                  <motion.div
+                    className="relative"
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    {/* Profile picture or initials */}
+                    {t.profilePic ? (
+                      <img
+                        src={getProfilePicUrl(t.profilePic) || ""}
+                        alt={t.name}
+                        className="h-24 w-24 rounded-full object-cover shadow-lg shadow-primary/25"
+                      />
+                    ) : (
+                      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/25">
+                        <span className="font-serif text-2xl font-bold">
+                          {t.name.split(" ").map((n) => n[0]).join("")}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Rating badge */}
+                    <div className="absolute -right-1 -bottom-1 flex items-center gap-0.5 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-900 shadow">
+                      <Star size={12} fill="currentColor" />
+                      {t.rating.toFixed(1)}
+                    </div>
+                  </motion.div>
+                </div>
+
+                {/* Content */}
+                <h3 className="font-serif text-xl font-semibold text-foreground transition-colors group-hover:text-primary">
+                  {t.name}
+                </h3>
+                <p className="mb-2 text-sm font-medium text-primary">{t.title}</p>
+
+                {/* Experience badge */}
+                <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs">
+                  <Clock size={14} className="text-primary" />
+                  <span className="font-medium text-foreground">{t.experience}</span>
+                </div>
+
+                {/* Bio */}
+                <p className="mb-4 text-sm leading-relaxed text-muted-foreground line-clamp-2">
+                  {t.bio}
+                </p>
+
+                {/* Specialties */}
+                <div className="flex flex-wrap justify-center gap-1.5">
+                  {t.specialties.slice(0, 3).map((s) => (
+                    <motion.span
+                      key={s}
+                      whileHover={{ scale: 1.05 }}
+                      className="cursor-pointer rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+                    >
+                      {s}
+                    </motion.span>
+                  ))}
+                  {t.specialties.length > 3 && (
+                    <span className="rounded-full bg-secondary/50 px-2.5 py-1 text-xs text-secondary-foreground">
+                      +{t.specialties.length - 3}
+                    </span>
+                  )}
+                </div>
+
+                {/* Decorative corner */}
+                <div className="absolute top-0 right-0 h-16 w-16 overflow-hidden">
+                  <div className="absolute -right-8 -top-8 h-24 w-24 rounded-full bg-primary/10 transition-transform duration-300 group-hover:scale-150" />
+                </div>
+
+                {/* Bottom accent */}
+                <motion.div
+                  className="absolute bottom-0 left-1/2 h-1 w-16 -translate-x-1/2 rounded-full bg-primary"
+                  initial={{ scaleX: 0 }}
+                  whileInView={{ scaleX: 1 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {/* Join CTA */}
+        <AnimatedSection className="mt-14 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+          >
+            <motion.span
+              whileHover={{ scale: 1.02 }}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-6 py-3 text-sm font-medium text-primary"
+            >
+              <Award size={16} />
+              Join our team of expert therapists
+            </motion.span>
+          </motion.div>
+        </AnimatedSection>
+      </div>
+    </section>
+  );
+};
 
 export default TherapistsSection;
