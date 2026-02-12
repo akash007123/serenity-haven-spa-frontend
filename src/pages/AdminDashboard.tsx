@@ -6,14 +6,10 @@ import {
   IndianRupee,
   Users,
   TrendingUp,
-  Clock,
   Loader2,
   ArrowUpRight,
-  MoreHorizontal,
   ChevronRight,
   Star,
-  MapPin,
-  Award,
   Activity,
   DollarSign,
   CalendarCheck,
@@ -23,25 +19,18 @@ import {
 import { Link } from "react-router-dom";
 import api, { Therapist } from "../lib/api";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
   CartesianGrid,
-  LineChart,
-  Line,
   Area,
   AreaChart,
   ResponsiveContainer,
   Tooltip,
   Legend,
 } from "recharts";
-import { ChartJS, Doughnut, Pie, PolarArea, Radar } from "@/components/ui/chartjs-charts";
+import { Doughnut, Pie, PolarArea, Radar } from "@/components/ui/chartjs-charts";
 
 interface DashboardData {
   stats: {
@@ -86,7 +75,7 @@ const containerVariants = {
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } },
-};
+} as const;
 
 const getStatusBadge = (status: string) => {
   const styles: Record<string, string> = {
