@@ -198,16 +198,31 @@ class ApiService {
         ...options,
       });
 
+      // Handle non-JSON responses
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const text = await response.text();
+        throw new Error(`Unexpected response: ${text.substring(0, 100)}`);
+      }
+
       const data = await response.json();
 
+      // Handle HTTP errors
       if (!response.ok) {
-        throw new Error(data.message || "An error occurred");
+        const errorMessage = data.message || 
+                            data.error || 
+                            `HTTP ${response.status}: Request failed`;
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error(error.message);
+        // Add context to error without exposing sensitive details
+        if (error.message.includes("Failed to fetch")) {
+          throw new Error("Unable to connect to server. Please check your connection.");
+        }
+        throw error;
       }
       throw new Error("An unexpected error occurred");
     }

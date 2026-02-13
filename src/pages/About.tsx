@@ -414,10 +414,10 @@ const About = () => (
           className="grid grid-cols-2 gap-4 md:grid-cols-4"
         >
           {[
-            { src: spaLounge, alt: "Spa lounge", span: "md:col-span-2 md:row-span-2", height: "h-64 md:h-full" },
-            { src: spaOils, alt: "Essential oils", span: "", height: "h-32 md:h-40" },
-            { src: spaExterior, alt: "Spa exterior", span: "", height: "h-32 md:h-40" },
-            { src: aboutImage, alt: "Treatment room", span: "col-span-2", height: "h-48 md:h-56" },
+            { src: 'https://ziammaletomalemassageservice.weebly.com/uploads/1/4/9/1/149102421/published/masseuse-gives-massage-dark-room-713163-4255.jpg?1713081353', alt: "Spa lounge", span: "md:col-span-2 md:row-span-2", height: "h-64 md:h-full" },
+            { src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjt6Xbj_FOLx1fxqunFHZGEeNDfT6cxnOwGA&s', alt: "Essential oils", span: "", height: "h-32 md:h-40" },
+            { src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAbzxaPM0L54QrzWUUHVzU3Bc9e0cLNl3RLg&s', alt: "Spa exterior", span: "", height: "h-32 md:h-40" },
+            { src: 'https://img1.wsimg.com/isteam/ip/cd597300-e687-42ff-83d4-df0cf077b92f/3cfddf37-8a49-4a85-a079-49a63346876e.jpeg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25', alt: "Treatment room", span: "col-span-2", height: "h-48 md:h-56" },
           ].map((img, i) => (
             <motion.div
               key={i}
