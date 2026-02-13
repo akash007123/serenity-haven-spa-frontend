@@ -86,23 +86,42 @@ const features = [
 
 const testimonials = [
   {
-    quote: "As a competitive powerlifter, muscle recovery is crucial. Tripod's sports massage has been a game-changer for my training. I'm lifting heavier with less pain.",
-    author: "Marcus Chen",
-    role: "Competitive Powerlifter",
-    rating: 5,
-  },
-  {
-    quote: "The therapists really understand athlete needs. They know exactly which muscles to target after marathon training. Best recovery investment I've made.",
-    author: "James Wilson",
-    role: "Marathon Runner",
-    rating: 5,
-  },
-  {
-    quote: "From CrossFit to weightlifting, their deep tissue work keeps me performing at my best. The difference in my recovery time is remarkable.",
-    author: "David Park",
-    role: "CrossFit Athlete",
-    rating: 5,
-  },
+  quote: "As a state-level powerlifter, muscle recovery is everything for me. The sports massage at Tripod Wellness has completely transformed my training routine. I'm lifting heavier with much less soreness and faster recovery.",
+  author: "Rahul Verma",
+  role: "Competitive Powerlifter",
+  rating: 5,
+},
+{
+  quote: "The therapists truly understand the needs of athletes. After my marathon practice sessions, they know exactly which muscle groups require attention. This has been the best recovery decision I’ve made.",
+  author: "Amit Sharma",
+  role: "Marathon Runner",
+  rating: 5,
+},
+{
+  quote: "From CrossFit training to heavy weightlifting sessions, their deep tissue therapy keeps my body performing at its peak. My recovery time has improved significantly, and I feel stronger every week.",
+  author: "Vikram Singh",
+  role: "CrossFit Athlete",
+  rating: 4,
+},
+{
+  quote: "As a professional cricketer, body maintenance is non-negotiable. The sports massage sessions at Tripod Wellness have significantly improved my flexibility and reduced post-match stiffness. I feel match-ready much faster now.",
+  author: "Karan Malhotra",
+  role: "Professional Cricketer",
+  rating: 5,
+},
+{
+  quote: "Intense gym sessions used to leave me with constant muscle tightness. After starting regular deep tissue therapy here, my recovery has become smoother and my performance has improved noticeably.",
+  author: "Sandeep Yadav",
+  role: "Fitness Trainer",
+  rating: 4,
+},
+{
+  quote: "Being a football player, lower body recovery is critical. The therapists focus precisely on the pressure points and muscle groups that need attention. The relief and strength I feel after every session is outstanding.",
+  author: "Arjun Rathore",
+  role: "Football Player",
+  rating: 5,
+},
+
 ];
 
 const fadeInUp = {
