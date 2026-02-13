@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import type { Variants } from "framer-motion";
-import { Clock, X, CheckCircle, ArrowRight, Sparkles, Star, Calendar, Heart, Award, Loader2 } from "lucide-react";
+import { Clock, X, CheckCircle, ArrowRight, Sparkles, Star, Calendar, Heart, Award, Loader2, AlertTriangle, FileText, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import AnimatedSection from "@/components/AnimatedSection";
 import api from "@/lib/api";
@@ -58,6 +58,17 @@ const serviceImages: Record<string, string> = {
   reflexology: serviceThai,
   sports: serviceSwedish,
   prenatal: serviceAromatherapy,
+};
+
+// Helper function to get image URL - supports both full URLs and image keys
+const getImageUrl = (image: string): string => {
+  if (!image) return serviceSwedish;
+  // If it's a full URL, use it directly
+  if (image.startsWith('http://') || image.startsWith('https://')) {
+    return image;
+  }
+  // Otherwise, look up from local images
+  return serviceImages[image] || serviceSwedish;
 };
 
 const heroServices = [
@@ -437,7 +448,7 @@ const Services = () => {
                   <>
                     <div className="relative h-40 w-full overflow-hidden">
                       <img
-                        src={serviceImages[s.image] || serviceSwedish}
+                        src={getImageUrl(s.image)}
                         alt={s.name}
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -585,12 +596,12 @@ const Services = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-2xl overflow-hidden rounded-3xl bg-background shadow-2xl"
+              className="w-full max-w-2xl rounded-3xl bg-background shadow-2xl max-h-[85vh] flex flex-col"
             >
-              {/* Image */}
-              <div className="relative aspect-[16/9] overflow-hidden">
+              {/* Image - Fixed at top */}
+              <div className="relative h-40 md:h-48 overflow-hidden shrink-0">
                 <img
-                  src={serviceImages[selectedService.image] || serviceSwedish}
+                  src={getImageUrl(selectedService.image)}
                   alt={selectedService.name}
                   className="h-full w-full object-cover"
                 />
@@ -602,31 +613,50 @@ const Services = () => {
                 >
                   <X size={20} className="text-white" />
                 </button>
-                <div className="absolute bottom-4 left-6">
-                  <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">
-                    {selectedService.category}
-                  </span>
-                </div>
               </div>
 
-              {/* Content */}
-              <div className="p-6 md:p-8">
+              {/* Content - Scrollable */}
+              <div className="p-6 md:p-8 overflow-y-auto">
+                {/* Badges */}
+                <div className="mb-4 flex flex-wrap gap-2">
+                  {selectedService.category && (
+                    <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                      {selectedService.category}
+                    </span>
+                  )}
+                  {selectedService.featured && (
+                    <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700">
+                      Featured
+                    </span>
+                  )}
+                  {selectedService.popular && (
+                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                      Popular
+                    </span>
+                  )}
+                </div>
+
                 {/* Header */}
-                <div className="mb-6 flex items-start justify-between">
-                  <div>
-                    <h3 className="font-serif text-2xl font-semibold text-foreground">
-                      {selectedService.name}
-                    </h3>
-                    <div className="mt-2 flex items-center gap-3">
+                <div className="mb-6">
+                  <h3 className="font-serif text-2xl font-semibold text-foreground">
+                    {selectedService.name}
+                  </h3>
+                  {selectedService.shortDescription && (
+                    <p className="mt-2 text-muted-foreground">{selectedService.shortDescription}</p>
+                  )}
+                  {/* <div className="mt-3 flex items-center gap-3">
+                    {selectedService.rating && (
                       <div className="flex items-center gap-1">
                         <Star size={16} className="fill-amber-400 text-amber-400" />
                         <span className="text-sm font-medium">{selectedService.rating}</span>
-                        <span className="text-sm text-muted-foreground">
-                          ({selectedService.reviewCount} reviews)
-                        </span>
+                        {selectedService.reviewCount && (
+                          <span className="text-sm text-muted-foreground">
+                            ({selectedService.reviewCount} reviews)
+                          </span>
+                        )}
                       </div>
-                    </div>
-                  </div>
+                    )}
+                  </div> */}
                 </div>
 
                 {/* Description */}
@@ -635,7 +665,7 @@ const Services = () => {
                 </p>
 
                 {/* Duration Selection */}
-                {selectedService.durations.length > 1 && (
+                {selectedService.durations.length > 0 && (
                   <div className="mb-6">
                     <p className="mb-3 text-sm font-medium text-foreground">Select Duration:</p>
                     <div className="flex flex-wrap gap-3">
@@ -661,41 +691,119 @@ const Services = () => {
                 )}
 
                 {/* Benefits */}
-                <div className="mb-6">
-                  <h4 className="mb-3 font-serif text-lg font-semibold text-foreground">Benefits</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    {selectedService.benefits.map((b) => (
-                      <motion.div
-                        key={b}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="flex items-center gap-2"
-                      >
-                        <CheckCircle size={16} className="shrink-0 text-primary" />
-                        <span className="text-sm text-muted-foreground">{b}</span>
-                      </motion.div>
-                    ))}
+                {selectedService.benefits && selectedService.benefits.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 font-serif text-lg font-semibold text-foreground">Benefits</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      {selectedService.benefits.map((b) => (
+                        <motion.div
+                          key={b}
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          className="flex items-center gap-2"
+                        >
+                          <CheckCircle size={16} className="shrink-0 text-primary" />
+                          <span className="text-sm text-muted-foreground">{b}</span>
+                        </motion.div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Benefit Details */}
+                {selectedService.benefitDetails && selectedService.benefitDetails.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 font-serif text-lg font-semibold text-foreground">What You'll Experience</h4>
+                    <div className="space-y-3">
+                      {selectedService.benefitDetails.map((detail, i) => (
+                        <motion.div
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3"
+                        >
+                          <div className="rounded-full bg-primary/10 p-2">
+                            <Info size={16} className="text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-foreground">{detail.label}</p>
+                            {detail.icon && <p className="text-xs text-muted-foreground">{detail.icon}</p>}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* What to Expect */}
-                <div className="mb-6">
-                  <h4 className="mb-3 font-serif text-lg font-semibold text-foreground">What to Expect</h4>
-                  <ul className="space-y-2">
-                    {selectedService.whatToExpect?.map((item, i) => (
-                      <motion.li
-                        key={i}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.1 }}
-                        className="flex items-start gap-2 text-sm text-muted-foreground"
-                      >
-                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                        {item}
-                      </motion.li>
-                    ))}
-                  </ul>
-                </div>
+                {selectedService.whatToExpect && selectedService.whatToExpect.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 font-serif text-lg font-semibold text-foreground">What to Expect</h4>
+                    <ul className="space-y-2">
+                      {selectedService.whatToExpect.map((item, i) => (
+                        <motion.li
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                          {item}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Preparation Tips */}
+                {selectedService.preparationTips && selectedService.preparationTips.length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="mb-3 font-serif text-lg font-semibold text-foreground">
+                      <FileText size={18} className="inline mr-2" />
+                      Preparation Tips
+                    </h4>
+                    <ul className="space-y-2">
+                      {selectedService.preparationTips.map((tip, i) => (
+                        <motion.li
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex items-start gap-2 text-sm text-muted-foreground"
+                        >
+                          <Sparkles size={14} className="mt-1.5 shrink-0 text-primary" />
+                          {tip}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Contraindications */}
+                {selectedService.contraindications && selectedService.contraindications.length > 0 && (
+                  <div className="mb-6 rounded-lg bg-red-50 p-4 dark:bg-red-950/30">
+                    <h4 className="mb-3 flex items-center gap-2 font-serif text-lg font-semibold text-red-600 dark:text-red-400">
+                      <AlertTriangle size={18} />
+                      Contraindications
+                    </h4>
+                    <ul className="space-y-2">
+                      {selectedService.contraindications.map((item, i) => (
+                        <motion.li
+                          key={i}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: i * 0.1 }}
+                          className="flex items-start gap-2 text-sm text-red-600 dark:text-red-400"
+                        >
+                          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500" />
+                          {item}
+                        </motion.li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
 
                 {/* CTA */}
                 <motion.div

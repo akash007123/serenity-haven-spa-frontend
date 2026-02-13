@@ -16,6 +16,7 @@ import Gallery from "./pages/Gallery";
 import Booking from "./pages/Booking";
 import Contact from "./pages/Contact";
 import FAQ from "./pages/FAQ";
+import GymMassage from "./pages/GymMassage";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminBookings from "./pages/AdminBookings";
@@ -82,6 +83,7 @@ const AnimatedRoutes = () => {
         <Route path="/about" element={<PublicPage component={About} />} />
         <Route path="/services" element={<PublicPage component={Services} />} />
         <Route path="/gallery" element={<PublicPage component={Gallery} />} />
+        <Route path="/gym" element={<PublicPage component={GymMassage} />} />
         <Route path="/booking" element={<PublicPage component={Booking} />} />
         <Route path="/contact" element={<PublicPage component={Contact} />} />
         <Route path="/faq" element={<PublicPage component={FAQ} />} />

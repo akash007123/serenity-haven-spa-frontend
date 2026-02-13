@@ -70,6 +70,17 @@ const serviceImages: Record<string, string> = {
   prenatal: serviceAromatherapy,
 };
 
+// Helper function to get image URL - supports both full URLs and image keys
+const getImageUrl = (image: string): string => {
+  if (!image) return serviceSwedish;
+  // If it's a full URL, use it directly
+  if (image.startsWith('http://') || image.startsWith('https://')) {
+    return image;
+  }
+  // Otherwise, look up from local images
+  return serviceImages[image] || serviceSwedish;
+};
+
 const ServicesOverview = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,7 +183,7 @@ const ServicesOverview = () => {
                     <motion.img
                       whileHover={{ scale: 1.1 }}
                       transition={{ duration: 0.6, ease: "easeOut" }}
-                      src={serviceImages[s.image] || serviceSwedish}
+                      src={getImageUrl(s.image)}
                       alt={s.name}
                       className="h-full w-full object-cover"
                     />

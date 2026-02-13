@@ -65,6 +65,16 @@ const CATEGORIES = [
   "Specialty",
 ];
 
+const SERVICE_IMAGES: Record<string, string> = {
+  Swedish: "https://www.luxuryspa.net.in/wp-content/uploads/2018/12/female-to-male-body-massage-andheri-1024x683.jpeg",
+  "Deep Tissue": "https://bluestonefirecupping.com/wp-content/uploads/2020/06/Man-getting-a-deep-tissue-massage-Blue-Stone-Firecupping-and-Massage.jpeg",
+  Aromatherapy: "https://www.coolaromaspa.com/wp-content/uploads/2025/01/ayurvedic-oil-526x390-1.jpg",
+  "Hot Stone": "https://media.istockphoto.com/id/514117556/photo/young-man-enjoying-during-hot-stone-therapy-at-the-spa.jpg?s=612x612&w=0&k=20&c=A4keFWattXQ-Y33qV1jaogcahZ37N76r-urw7qaTBTA=",
+  Thai: "https://media.istockphoto.com/id/514117556/photo/young-man-enjoying-during-hot-stone-therapy-at-the-spa.jpg?s=612x612&w=0&k=20&c=A4keFWattXQ-Y33qV1jaogcahZ37N76r-urw7qaTBTA=",
+  Reflexology: "https://static.vecteezy.com/system/resources/previews/004/827/472/non_2x/therapist-s-hands-massaging-male-foot-photo.jpg",
+  Sports: "https://images.squarespace-cdn.com/content/v1/573ad1f637013b75a014d16d/1622361526968-B5N2IJALI3LHLBYKVS4U/shutterstock_1235492908.jpg?format=1000w",
+};
+
 const INITIAL_FORM_STATE: Partial<Service> = {
   name: "",
   shortDescription: "",
@@ -72,7 +82,7 @@ const INITIAL_FORM_STATE: Partial<Service> = {
   durations: [{ minutes: 60, price: "" }],
   price: "",
   priceRange: { min: 0, max: 0 },
-  image: "swedish",
+  image: "",
   category: "Classic",
   featured: false,
   popular: false,
@@ -256,7 +266,14 @@ const AdminServices = () => {
   };
 
   const updateFormField = (field: keyof Service, value: unknown) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Auto-set image URL when name changes
+      if (field === "name" && typeof value === "string") {
+        updated.image = SERVICE_IMAGES[value] || prev.image || "";
+      }
+      return updated;
+    });
     if (formErrors[field as string]) {
       setFormErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -623,20 +640,39 @@ const AdminServices = () => {
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium">Image Key</label>
+                    <label className="mb-1 block text-sm font-medium">Image URL</label>
+                    <input
+                      type="text"
+                      value={formData.image || ""}
+                      onChange={(e) => updateFormField("image", e.target.value)}
+                      placeholder="Enter image URL or select from presets below"
+                      className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    />
+                    {formData.image && (
+                      <div className="mt-2">
+                        <img
+                          src={formData.image}
+                          alt="Preview"
+                          className="h-24 w-full rounded-lg object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-sm font-medium">Quick Select Image</label>
                     <select
-                      value={formData.image || "swedish"}
+                      value=""
                       onChange={(e) => updateFormField("image", e.target.value)}
                       className="w-full rounded-lg border border-input bg-background px-4 py-2.5 text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     >
-                      <option value="swedish">Swedish</option>
-                      <option value="deep-tissue">Deep Tissue</option>
-                      <option value="aromatherapy">Aromatherapy</option>
-                      <option value="hot-stone">Hot Stone</option>
-                      <option value="thai">Thai</option>
-                      <option value="reflexology">Reflexology</option>
-                      <option value="sports">Sports</option>
-                      <option value="prenatal">Prenatal</option>
+                      <option value="">Select a preset image...</option>
+                      {Object.entries(SERVICE_IMAGES).map(([name, url]) => (
+                        <option key={name} value={url}>{name}</option>
+                      ))}
                     </select>
                   </div>
                 </div>

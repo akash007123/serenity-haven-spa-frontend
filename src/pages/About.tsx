@@ -418,6 +418,14 @@ const About = () => (
             { src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRjt6Xbj_FOLx1fxqunFHZGEeNDfT6cxnOwGA&s', alt: "Essential oils", span: "", height: "h-32 md:h-40" },
             { src: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSAbzxaPM0L54QrzWUUHVzU3Bc9e0cLNl3RLg&s', alt: "Spa exterior", span: "", height: "h-32 md:h-40" },
             { src: 'https://img1.wsimg.com/isteam/ip/cd597300-e687-42ff-83d4-df0cf077b92f/3cfddf37-8a49-4a85-a079-49a63346876e.jpeg/:/cr=t:0%25,l:0%25,w:100%25,h:100%25', alt: "Treatment room", span: "col-span-2", height: "h-48 md:h-56" },
+
+
+            { src: 'https://static.wixstatic.com/media/ceddff_02f71be140e54bd8a34a142426f5dd4b~mv2.jpg/v1/fill/w_640,h_440,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/ceddff_02f71be140e54bd8a34a142426f5dd4b~mv2.jpg', alt: "Spa lounge", span: "md:col-span-2 md:row-span-2", height: "h-64 md:h-full" },
+            { src: 'https://static.vecteezy.com/system/resources/thumbnails/023/924/403/small/a-man-getting-a-massage-photo.jpg', alt: "Essential oils", span: "", height: "h-32 md:h-40" },
+            { src: 'https://gayfriendly.com/wp-content/uploads/2024/04/shutterstock_2085840223-922x630.jpg.webp', alt: "Spa exterior", span: "", height: "h-32 md:h-40" },
+            { src: 'https://media.gettyimages.com/id/611091016/photo/man-having-back-massage-at-the-health-spa.jpg?s=612x612&w=0&k=20&c=gbaaqjqSKy2uL3hGxT58ohfHggeAN76OcMyWamrC5Q0=', alt: "Treatment room", span: "col-span-2", height: "h-48 md:h-56" },
+            
+            
           ].map((img, i) => (
             <motion.div
               key={i}
