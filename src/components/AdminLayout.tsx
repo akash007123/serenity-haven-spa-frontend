@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -40,6 +40,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const navRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
@@ -67,12 +68,8 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const getProfilePicUrl = (profilePic?: string) => {
     if (!profilePic) return "";
-
-    if (profilePic.startsWith("http")) {
-      return profilePic;
-    }
-
-    const baseUrl = API_URL.replace("/api", ""); // remove /api
+    if (profilePic.startsWith("http")) return profilePic;
+    const baseUrl = API_URL.replace("/api", "");
     return `${baseUrl}/${profilePic.replace(/^\/+/, "")}`;
   };
 
@@ -80,13 +77,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
     <div className="flex h-screen bg-muted/30">
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 z-40 h-screen border-r bg-card transition-all duration-300 ${
+        className={`fixed left-0 top-0 z-40 flex h-screen flex-col border-r bg-card transition-all duration-300 ${
           collapsed ? "w-20" : "w-64"
         }`}
       >
-        {/* Logo */}
-        <div className="flex h-16 items-center justify-between border-b px-4">
-          {!collapsed && (
+        {/* Logo - Fixed at top */}
+        <div className="flex h-16 flex-shrink-0 items-center justify-between border-b px-4">
+          {!collapsed ? (
             <Link
               to="/"
               className="flex items-center gap-2 font-serif text-xl font-bold text-foreground"
@@ -96,8 +93,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 Tripod<span className="text-primary">.</span>
               </span>
             </Link>
-          )}
-          {collapsed && (
+          ) : (
             <Link to="/" className="mx-auto">
               <Sparkles className="h-6 w-6 text-primary" />
             </Link>
@@ -106,16 +102,19 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
             onClick={() => setCollapsed(!collapsed)}
             className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
-            {collapsed ? (
-              <ChevronRight size={20} />
-            ) : (
-              <ChevronLeft size={20} />
-            )}
+            {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="mt-6 px-3 overflow-y-auto" style={{ maxHeight: "calc(100vh - 180px)" }}>
+        {/* Navigation - Scrollable */}
+        <div 
+          ref={navRef}
+          className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-4 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/30"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: 'rgba(0,0,0,0.2) transparent'
+          }}
+        >
           <ul className="space-y-2">
             {adminNavItems.map((item) => {
               const isActive = location.pathname === item.path;
@@ -127,22 +126,23 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                       isActive
                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                    }`}
+                    } ${collapsed ? "justify-center" : ""}`}
+                    title={collapsed ? item.label : undefined}
                   >
-                    <item.icon size={20} className={collapsed ? "mx-auto" : ""} />
-                    {!collapsed && <span>{item.label}</span>}
+                    <item.icon size={20} className="flex-shrink-0" />
+                    {!collapsed && <span className="truncate">{item.label}</span>}
                   </Link>
                 </li>
               );
             })}
           </ul>
-        </nav>
+        </div>
 
-        {/* User section */}
-        <div className="absolute bottom-0 left-0 right-0 border-t p-4">
+        {/* User section - Fixed at bottom */}
+        <div className="flex-shrink-0 border-t p-4">
           <div className={`flex items-center gap-3 ${collapsed ? "justify-center" : ""}`}>
             {user?.profilePic ? (
-              <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10 flex-shrink-0">
                 <AvatarImage
                   src={getProfilePicUrl(user.profilePic)}
                   alt={user?.name}
@@ -156,7 +156,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 </AvatarFallback>
               </Avatar>
             ) : (
-              <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
+              <div className="h-10 w-10 flex-shrink-0 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
                 {getInitials(user?.name || 'A')}
               </div>
             )}
@@ -165,7 +165,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 <p className="text-sm font-medium text-foreground truncate">
                   {user?.name || 'Admin User'}
                 </p>
-                <p className="text-xs text-muted-foreground capitalize">
+                <p className="text-xs text-muted-foreground capitalize truncate">
                   {user?.role ? getRoleLabel(user.role) : 'User'}
                 </p>
               </div>
@@ -177,7 +177,16 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
               className="mt-4 flex w-full items-center gap-2 rounded-lg px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <LogOut size={18} />
-              Sign Out
+              <span className="truncate">Sign Out</span>
+            </button>
+          )}
+          {collapsed && (
+            <button
+              onClick={handleLogout}
+              className="mt-4 flex w-full justify-center rounded-lg px-4 py-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              title="Sign Out"
+            >
+              <LogOut size={20} />
             </button>
           )}
         </div>

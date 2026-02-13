@@ -1,12 +1,80 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import type { Variants } from "framer-motion";
 import { CheckCircle, Clock, Shield, Sparkles, Calendar as CalendarIcon, ArrowRight, User, Phone, Mail, MessageSquare, Star, MapPin, Phone as PhoneIcon, Loader2 } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
-import { services, getPopularServices } from "@/data/services";
-import { therapists } from "@/data/therapists";
-import spaProcess from "@/assets/spa-process.jpg";
 import api from "@/lib/api";
+import spaProcess from "@/assets/spa-process.jpg";
+
+interface ServiceDuration {
+  minutes: number;
+  price: string;
+}
+
+interface ServiceBenefit {
+  label: string;
+  icon?: string;
+}
+
+interface Service {
+  _id: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  description: string;
+  durations: ServiceDuration[];
+  price: string;
+  priceRange: {
+    min: number;
+    max: number;
+  };
+  image: string;
+  category: string;
+  featured: boolean;
+  popular: boolean;
+  benefits: string[];
+  benefitDetails: ServiceBenefit[];
+  whatToExpect: string[];
+  contraindications?: string[];
+  preparationTips?: string[];
+  rating?: number;
+  reviewCount?: number;
+  color?: string;
+  gradient?: string;
+  isActive: boolean;
+}
+
+interface ServiceCategory {
+  id: string;
+  name: string;
+  icon: string;
+}
+
+interface TherapistAvailability {
+  day: string;
+  startTime?: string;
+  endTime?: string;
+}
+
+interface Therapist {
+  _id: string;
+  name: string;
+  title: string;
+  slug?: string;
+  specialties: string[];
+  experience: string;
+  bio: string;
+  profilePic?: string;
+  email?: string;
+  phone?: string;
+  languages?: string[];
+  availability: TherapistAvailability[];
+  rating: number;
+  reviewCount: number;
+  bookingCount: number;
+  isActive: boolean;
+  isFeatured: boolean;
+}
 
 const timeSlots = [
   { time: "09:00", label: "9:00 AM" },
@@ -79,11 +147,54 @@ const Booking = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeStep, setActiveStep] = useState(1);
+  const [services, setServices] = useState<Service[]>([]);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [therapists, setTherapists] = useState<Therapist[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
   const { scrollY } = useScroll();
   const heroOpacity = useTransform(scrollY, [0, 400], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 400], [1, 1.05]);
 
-  const popularServices = getPopularServices();
+  const fetchData = useCallback(async () => {
+    try {
+      setServicesLoading(true);
+      const [servicesRes, categoriesRes, therapistsRes] = await Promise.all([
+        api.getServices({ active: true }),
+        api.getServiceCategories(),
+        api.getTherapists({ active: true }),
+      ]);
+      
+      if (servicesRes.success && servicesRes.data) {
+        setServices(servicesRes.data);
+      }
+      if (categoriesRes.success && categoriesRes.data) {
+        setCategories([
+          { id: "all", name: "All Services", icon: "sparkles" },
+          ...(categoriesRes.data || []).map((c: { name?: string; id?: string; icon?: string }) => ({
+            id: (c.name || c.id || "").toString(),
+            name: c.name || c.id || "Unknown",
+            icon: c.icon || "sparkles",
+          })),
+        ]);
+      }
+      if (therapistsRes.success && therapistsRes.data) {
+        setTherapists(therapistsRes.data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch data:", err);
+    } finally {
+      setServicesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Get popular services (marked as popular or first 4)
+  const popularServices = services.filter(s => s.popular).slice(0, 4);
+  const fallbackServices = services.slice(0, 4);
+  const displayPopularServices = popularServices.length > 0 ? popularServices : fallbackServices;
 
   const update = (field: keyof FormData, value: string) => {
     setForm((p) => ({ ...p, [field]: value }));
@@ -396,38 +507,46 @@ const Booking = () => {
                   </div>
 
                   <div className="space-y-4">
-                    {popularServices.map((service, index) => (
-                      <motion.div
-                        key={service.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.5 + index * 0.1 }}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => update("service", service.name)}
-                        className={`cursor-pointer overflow-hidden rounded-xl border transition-all ${
-                          form.service === service.name
-                            ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
-                            : "border-border bg-background hover:border-primary/50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-4 p-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-serif font-bold">
-                            {index + 1}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-foreground">{service.name}</h4>
-                            <p className="text-sm text-muted-foreground">{service.duration}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-primary">{service.price}</p>
-                            <div className="flex items-center gap-1">
-                              <Star size={12} className="fill-amber-400 text-amber-400" />
-                              <span className="text-xs text-muted-foreground">{service.rating}</span>
+                    {servicesLoading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    ) : displayPopularServices.length > 0 ? (
+                      displayPopularServices.map((service, index) => (
+                        <motion.div
+                          key={service._id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.5 + index * 0.1 }}
+                          whileHover={{ scale: 1.02 }}
+                          onClick={() => update("service", service.name)}
+                          className={`cursor-pointer overflow-hidden rounded-xl border transition-all ${
+                            form.service === service.name
+                              ? "border-primary bg-primary/5 shadow-lg shadow-primary/10"
+                              : "border-border bg-background hover:border-primary/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-4 p-4">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary font-serif font-bold">
+                              {index + 1}
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-medium text-foreground">{service.name}</h4>
+                              <p className="text-sm text-muted-foreground">{service.durations[0]?.minutes || 60} min</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-bold text-primary">{service.price}</p>
+                              <div className="flex items-center gap-1">
+                                <Star size={12} className="fill-amber-400 text-amber-400" />
+                                <span className="text-xs text-muted-foreground">{service.rating || "5.0"}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No services available</p>
+                    )}
                   </div>
 
                   {/* Contact Info */}
@@ -435,15 +554,15 @@ const Booking = () => {
                     <h4 className="mb-4 font-medium text-foreground">Need Help?</h4>
                     <div className="space-y-3">
                       <a
-                        href="tel:+1234567890"
+                        href="tel:+919424940252"
                         className="flex items-center gap-3 rounded-lg bg-muted/50 px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       >
                         <PhoneIcon size={18} className="text-primary" />
-                        (123) 456-7890
+                        +91-9424940252
                       </a>
                       <div className="flex items-center gap-3 px-4 py-3 text-sm text-muted-foreground">
                         <MapPin size={18} className="text-primary" />
-                        123 Tripod Wellness Lane, Wellness City
+                        Gali No. 1, Kala Patthar, Nanakheda, Ujjain
                       </div>
                     </div>
                   </div>
@@ -528,8 +647,8 @@ const Booking = () => {
                             >
                               <option value="">Choose a service...</option>
                               {services.map((s) => (
-                                <option key={s.id} value={s.name}>
-                                  {s.name} - {s.price} ({s.duration})
+                                <option key={s._id} value={s.name}>
+                                  {s.name} - {s.price} ({s.durations[0]?.minutes || 60} min)
                                 </option>
                               ))}
                             </select>
@@ -548,7 +667,7 @@ const Booking = () => {
                             >
                               <option value="">Any available therapist</option>
                               {therapists.map((t) => (
-                                <option key={t.id} value={t.name}>
+                                <option key={t._id} value={t.name}>
                                   {t.name} - {t.title}
                                 </option>
                               ))}
